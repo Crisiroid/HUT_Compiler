@@ -15,10 +15,6 @@
 
 // Scanner class to scan and tokenize the input
 class Scanner {
-private:
-    std::vector<std::string> keywords = {"int", "float", "if", "else", "for", "while", "return"};
-    std::vector<std::string> operators = {"+", "-", "*", "/", "=", "=="};
-
 public:
     bool isKeyword(const std::string& word) {
         return std::find(Keywords::getKeywords().begin(), Keywords::getKeywords().end(), word) != Keywords::getKeywords().end();

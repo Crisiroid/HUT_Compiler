@@ -10,7 +10,7 @@ public:
         static std::vector<std::string> keywords = {
             "int", "float", "return", "if", "else",
             "for", "while", "do", "char", "double",
-            "string", "double", "let"
+            "string", "let"
         };
         return keywords;
     }
