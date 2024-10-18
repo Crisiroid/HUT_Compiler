@@ -15,7 +15,7 @@ enum class State {
 class DFA {
 public:
     DFA() : currentState(State::START) {
-        initializeRegexPatterns();  // Initialize regex patterns
+        initializeRegexPatterns();
     }
 
     [[nodiscard]] State getCurrentState() const {

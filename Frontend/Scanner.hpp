@@ -1,7 +1,6 @@
 #ifndef SCANNER_HPP
 #define SCANNER_HPP
 
-#include <iostream>
 #include <vector>
 #include <algorithm>
 #include "Token.hpp"
@@ -18,7 +17,6 @@ public:
         dfa.reset();
 
         for (char ch : line) {
-            // Ignore whitespace
             if (std::isspace(ch)) {
                 if (!tokenValue.empty()) {
                     Token token = processToken(tokenValue, lineNumber);
@@ -53,7 +51,7 @@ public:
                 Token token = {type, tokenValue, lineNumber};
                 tokens.push_back(token);
                 tokenValue.clear();
-                dfa.reset(); // Reset DFA for the next token
+                dfa.reset();
             }
         }
 
@@ -76,7 +74,7 @@ private:
         if (typeOverride == TokenType::KEYWORD) {
             type = identifyTokenType(value);
         } else {
-            type = typeOverride; // Use overridden type if provided
+            type = typeOverride;
         }
 
         return {type, value, line};
@@ -111,4 +109,4 @@ private:
     }
 };
 
-#endif // SCANNER_HPP
+#endif
