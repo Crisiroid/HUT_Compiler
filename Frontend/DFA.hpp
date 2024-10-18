@@ -1,43 +1,45 @@
-#ifndef DFA_HPP
-#define DFA_HPP
-
-#include "Operators.hpp"
+#include <regex>
 #include <cctype>
+#include "Operators.hpp"
+#include "Delimiters.hpp"
 
 enum class State {
-    START,      // Initial state
-    IN_KEYWORD, // Processing a potential keyword
-    IN_NUMBER,  // Processing a number
-    IN_OPERATOR,// Processing an operator
-    IN_IDENTIFIER, // Processing an identifier
-    DONE        // Final state
+    START,
+    IN_KEYWORD,
+    IN_NUMBER,
+    IN_OPERATOR,
+    IN_DELIMITER,
+    DONE
 };
 
 class DFA {
 public:
-    DFA() : currentState(State::START) {}
+    DFA() : currentState(State::START) {
+        initializeRegexPatterns();  // Initialize regex patterns
+    }
 
     [[nodiscard]] State getCurrentState() const {
         return currentState;
     }
 
-    // Transitions the DFA based on the input character
     void transition(char ch) {
         switch (currentState) {
             case State::START:
-                if (std::isalpha(ch)) {
-                    currentState = State::IN_KEYWORD;
-                } else if (std::isdigit(ch)) {
-                    currentState = State::IN_NUMBER;
-                } else if (isOperatorChar(ch)) {
+                if (isRegexMatch(std::string(1, ch), operatorRegex)) {
                     currentState = State::IN_OPERATOR;
+                } else if (isRegexMatch(std::string(1, ch), numberRegex)) {
+                    currentState = State::IN_NUMBER;
+                } else if (isRegexMatch(std::string(1, ch), identifierRegex)) {
+                    currentState = State::IN_KEYWORD;
+                } else if (isRegexMatch(std::string(1, ch), delimiterRegex)) {
+                    currentState = State::IN_DELIMITER;
                 } else {
                     currentState = State::START;
                 }
                 break;
 
             case State::IN_KEYWORD:
-                if (std::isalnum(ch)) {
+                if (isRegexMatch(std::string(1, ch), identifierRegex)) {
                     currentState = State::IN_KEYWORD;
                 } else {
                     currentState = State::DONE;
@@ -45,7 +47,7 @@ public:
                 break;
 
             case State::IN_NUMBER:
-                if (std::isdigit(ch)) {
+                if (isRegexMatch(std::string(1, ch), numberRegex)) {
                     currentState = State::IN_NUMBER;
                 } else {
                     currentState = State::DONE;
@@ -53,6 +55,15 @@ public:
                 break;
 
             case State::IN_OPERATOR:
+                tempOperator += ch;
+                if (isRegexMatch(tempOperator, operatorRegex)) {
+                    currentState = State::IN_OPERATOR;
+                } else {
+                    currentState = State::DONE;
+                }
+                break;
+
+            case State::IN_DELIMITER:
                 currentState = State::DONE;
                 break;
 
@@ -62,24 +73,44 @@ public:
         }
     }
 
-    // Resets the DFA to the START state
     void reset() {
         currentState = State::START;
+        tempOperator.clear();
     }
 
-    // Helper function to identify operator characters
-    static bool isOperatorChar(char ch) {
-        // Check if the character matches any of the operator strings
-        for (const auto& op : Operators::getOperators()) {
-            if (op.length() == 1 && op[0] == ch) {
-                return true; // Single-character operator match
+    const std::string& getTempOperator() const {
+        return tempOperator;
+    }
+
+    static bool isDelimiterChar(char ch) {
+        for (const auto& delim : Delimiters::getDelimiters()) {
+            if (delim.length() == 1 && delim[0] == ch) {
+                return true;
             }
         }
-        return false; // Not a matching operator
+        return false;
     }
 
 private:
     State currentState;
-};
+    std::string tempOperator;  // Store the operator string being built
 
-#endif // DFA_HPP
+    // Regular expressions for different token types
+    std::regex identifierRegex;
+    std::regex numberRegex;
+    std::regex operatorRegex;
+    std::regex delimiterRegex;
+
+    // Initialize regex patterns
+    void initializeRegexPatterns() {
+        identifierRegex = std::regex("^[a-zA-Z_][a-zA-Z0-9_]*$");  // Identifiers
+        numberRegex = std::regex("^[0-9]+(\\.[0-9]+)?$");  // Numbers
+        operatorRegex = std::regex("^[+\\-*/=<>!&|^%]+$");  // Operators (math/logical)
+        delimiterRegex = std::regex(R"([(){}[\];,])");  // Delimiters (can extend as needed)
+    }
+
+    // Check if a string matches a regex pattern
+    static bool isRegexMatch(const std::string& value, const std::regex& pattern) {
+        return std::regex_match(value, pattern);
+    }
+};
