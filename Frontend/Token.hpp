@@ -1,28 +1,37 @@
-// Token.hpp
-
-#ifndef TOKEN_H
-#define TOKEN_H
+#ifndef TOKEN_HPP
+#define TOKEN_HPP
 
 #include <string>
+#include <utility>
 
-// Define the TokenType enum for different types of tokens
 enum class TokenType {
-    KEYWORD,
     IDENTIFIER,
-    OPERATOR,
+    KEYWORD,
     NUMBER,
-    END_OF_FILE,
-    UNKNOWN
+    OPERATOR,
+    DELIMITER
 };
 
-// Define the Token struct to store the type, value, and line number of a token
-struct Token {
+class Token {
+public:
     TokenType type;
     std::string value;
     int line;
 
-    Token(TokenType type, const std::string& value, int line)
-        : type(type), value(value), line(line) {}
+    Token(TokenType type, std::string  value, int line)
+        : type(type), value(std::move(value)), line(line) {}
+
+    // Method to return a string representation of the token type
+    [[nodiscard]] std::string getTypeAsString() const {
+        switch (type) {
+            case TokenType::IDENTIFIER: return "IDENTIFIER";
+            case TokenType::KEYWORD: return "KEYWORD";
+            case TokenType::NUMBER: return "NUMBER";
+            case TokenType::OPERATOR: return "OPERATOR";
+            case TokenType::DELIMITER: return "DELIMITER";
+            default: return "UNKNOWN";
+        }
+    }
 };
 
-#endif // TOKEN_H
+#endif // TOKEN_HPP

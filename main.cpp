@@ -1,26 +1,21 @@
-// main.cpp
-
 #include <iostream>
-#include <fstream>
-#include "Frontend/Scanner.hpp"  // Scanner now handles tokenization
+#include <fstream> // To read the file line by line
+#include "Frontend/Scanner.hpp"
 
-// Function to scan a file line by line using the Scanner
-void scanFile(const std::string& filePath) {
-    std::ifstream file(filePath);
+void scanFile(const std::string& filename) {
+    Scanner scanner;
+    std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Error: Could not open the file " << filePath << std::endl;
+        std::cerr << "Error: Could not open the file " << filename << std::endl;
         return;
     }
 
-    Scanner scanner;
     std::string line;
     int lineNumber = 1;
-
     while (std::getline(file, line)) {
-        std::vector<Token> tokens = scanner.scan(line, lineNumber);
-        for (const auto& token : tokens) {
-            std::cout << "Token: " << token.value << ", Type: "
-                      << static_cast<int>(token.type) << ", Line: " << token.line << std::endl;
+        std::vector<Token> tokens = scanner.scan(line, lineNumber); // Pass each line and the line number
+        for (const Token& token : tokens) {
+            std::cout << "Token: " << token.value << ", Type: " << token.getTypeAsString() << ", Line: " << token.line << std::endl;
         }
         lineNumber++;
     }
@@ -28,14 +23,8 @@ void scanFile(const std::string& filePath) {
     file.close();
 }
 
-int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <input_file>" << std::endl;
-        return 1;
-    }
-
-    std::string filePath = argv[1];
-    scanFile(filePath);
-
+int main() {
+    std::string filename = "test.hol";
+    scanFile(filename);
     return 0;
 }

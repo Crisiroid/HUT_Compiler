@@ -9,4 +9,6 @@ add_executable(HUT_Compiler main.cpp
         Frontend/Keywords.hpp
         Frontend/Operators.hpp
         Frontend/Delimiters.hpp
+        Frontend/DFA.hpp
+        Frontend/DFA.hpp
 )

@@ -1,85 +1,111 @@
-// Scanner.hpp
+#ifndef SCANNER_HPP
+#define SCANNER_HPP
 
-#ifndef SCANNER_H
-#define SCANNER_H
-
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <cctype>
+#include <fstream>
 #include <iostream>
+#include <vector>
+#include <algorithm> // For std::find
 #include "Token.hpp"
 #include "Keywords.hpp"
 #include "Operators.hpp"
 #include "Delimiters.hpp"
+#include "DFA.hpp"
 
-// Scanner class to scan and tokenize the input
 class Scanner {
 public:
-    bool isKeyword(const std::string& word) {
-        return std::find(Keywords::getKeywords().begin(), Keywords::getKeywords().end(), word) != Keywords::getKeywords().end();
-    }
+    Scanner() : dfa() {}
 
-    bool isOperator(const std::string& word) {
-        return std::find(Operators::getOperators().begin(), Operators::getOperators().end(), word) != Operators::getOperators().end();
-    }
-
-    bool isDelimiter(const std::string& word) {
-        return std::find(Delimiters::getDelimiters().begin(), Delimiters::getDelimiters().end(), word) != Delimiters::getDelimiters().end();
-    }
-    // Method to scan a line of code and return a list of tokens
-    std::vector<Token> scan(const std::string& code, int line) {
+    // Main scanning function with two arguments
+    std::vector<Token> scan(const std::string& line, int& lineNumber) {
         std::vector<Token> tokens;
-        size_t i = 0;
-        while (i < code.length()) {
-            // Skip whitespace
-            if (std::isspace(code[i])) {
-                ++i;
+        std::string tokenValue;
+        dfa.reset();
+
+        for (char ch : line) {
+            // Check if the character is a delimiter
+            if (isDelimiter(std::string(1, ch))) {
+                // Process the previous token if there is one
+                if (!tokenValue.empty()) {
+                    Token token = processToken(tokenValue, lineNumber);
+                    tokens.push_back(token);
+                    tokenValue = ""; // Reset token value
+                }
+
+                // Add the delimiter as its own token
+                Token delimiterToken(TokenType::DELIMITER, std::string(1, ch), lineNumber);
+                tokens.push_back(delimiterToken);
+                dfa.reset(); // Reset DFA for the next token
+                continue; // Move to the next character
+            }
+
+            // Ignore whitespace
+            if (std::isspace(ch)) {
+                if (!tokenValue.empty()) {
+                    // Process the current token
+                    Token token = processToken(tokenValue, lineNumber);
+                    tokens.push_back(token);
+                    tokenValue = ""; // Reset token value
+                }
+                dfa.reset();
                 continue;
             }
 
-            // Check for keywords and identifiers
-            if (std::isalpha(code[i])) {
-                size_t start = i;
-                while (i < code.length() && (std::isalnum(code[i]) || code[i] == '_')) {
-                    ++i;
-                }
-                std::string word = code.substr(start, i - start);
+            // Continue building the token
+            dfa.transition(ch);
+            tokenValue += ch;
 
-                if (isKeyword(word)) {
-                    tokens.emplace_back(TokenType::KEYWORD, word, line);
-                } else {
-                    tokens.emplace_back(TokenType::IDENTIFIER, word, line);
-                }
-            }
-            // Check for numbers
-            else if (std::isdigit(code[i])) {
-                size_t start = i;
-                while (i < code.length() && std::isdigit(code[i])) {
-                    ++i;
-                }
-                std::string number = code.substr(start, i - start);
-                tokens.emplace_back(TokenType::NUMBER, number, line);
-            }
-            // Check for operators
-            else if (isOperator(std::string(1, code[i]))) {
-                size_t start = i;
-                ++i;
-                if (i < code.length() && isOperator(code.substr(start, 2))) {
-                    tokens.emplace_back(TokenType::OPERATOR, code.substr(start, 2), line);
-                    ++i;
-                } else {
-                    tokens.emplace_back(TokenType::OPERATOR, code.substr(start, 1), line);
-                }
-            }
-            // Unknown characters
-            else {
-                tokens.emplace_back(TokenType::UNKNOWN, std::string(1, code[i]), line);
-                ++i;
+            // Process token if DFA reaches a final state
+            if (dfa.getCurrentState() == State::DONE) {
+                Token token = processToken(tokenValue, lineNumber);
+                tokens.push_back(token);
+                tokenValue = ""; // Reset token value
+                dfa.reset(); // Reset DFA for the next token
             }
         }
+
+        // Handle any remaining token at the end of the line
+        if (!tokenValue.empty()) {
+            Token token = processToken(tokenValue, lineNumber);
+            tokens.push_back(token);
+        }
+
         return tokens;
+    }
+
+private:
+    DFA dfa;
+
+    Token processToken(const std::string& value, int line) {
+        TokenType type = identifyTokenType(value);
+        return Token(type, value, line);
+    }
+
+    TokenType identifyTokenType(const std::string& value) {
+        // Check the state of the DFA to identify the token type
+        if (dfa.getCurrentState() == State::IN_KEYWORD) {
+            if (isKeyword(value)) {
+                return TokenType::KEYWORD;
+            }
+        }
+
+        if (dfa.getCurrentState() == State::IN_NUMBER) {
+            return TokenType::NUMBER;
+        } else if (dfa.getCurrentState() == State::IN_OPERATOR) {
+            return TokenType::OPERATOR;
+        } else if (isDelimiter(value)) {
+            return TokenType::DELIMITER;
+        }
+
+        return TokenType::IDENTIFIER; // Default to identifier
+    }
+
+    static bool isKeyword(const std::string& value) {
+        return std::find(Keywords::getKeywords().begin(), Keywords::getKeywords().end(), value) != Keywords::getKeywords().end();
+    }
+
+    static bool isDelimiter(const std::string& value) {
+        return std::find(Delimiters::getDelimiters().begin(), Delimiters::getDelimiters().end(), value) != Delimiters::getDelimiters().end();
     }
 };
 
-#endif // SCANNER_H
+#endif // SCANNER_HPP
