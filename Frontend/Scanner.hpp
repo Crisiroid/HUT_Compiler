@@ -34,6 +34,7 @@ public:
                     tokens.push_back(token);
                     tokenValue.clear();
                 }
+
                 Token token = processToken(std::string(1, ch), lineNumber, TokenType::DELIMITER);
                 tokens.push_back(token);
                 dfa.reset();
@@ -93,7 +94,7 @@ private:
                 return TokenType::NUMBER;
 
             case State::IN_OPERATOR:
-                return TokenType::OPERATOR; break;
+                return TokenType::OPERATOR;
 
             case State::IN_DELIMITER:
                 return TokenType::DELIMITER;
@@ -107,6 +108,7 @@ private:
     static bool isKeyword(const std::string& value) {
         return std::find(Keywords::getKeywords().begin(), Keywords::getKeywords().end(), value) != Keywords::getKeywords().end();
     }
+
 };
 
 #endif

@@ -1,5 +1,5 @@
 #include <iostream>
-#include <fstream> // To read the file line by line
+#include <fstream>
 #include "Frontend/Scanner.hpp"
 
 void scanFile(const std::string& filename) {

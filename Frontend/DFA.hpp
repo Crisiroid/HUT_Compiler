@@ -1,6 +1,7 @@
+#ifndef DFA_HPP
+#define DFA_HPP
+
 #include <regex>
-#include <cctype>
-#include "Operators.hpp"
 #include "Delimiters.hpp"
 
 enum class State {
@@ -82,13 +83,8 @@ public:
         return tempOperator;
     }
 
-    static bool isDelimiterChar(char ch) {
-        for (const auto& delim : Delimiters::getDelimiters()) {
-            if (delim.length() == 1 && delim[0] == ch) {
-                return true;
-            }
-        }
-        return false;
+    bool isDelimiterChar(char ch) {
+        return isRegexMatch(std::string(1, ch), delimiterRegex);
     }
 
 private:
@@ -114,3 +110,5 @@ private:
         return std::regex_match(value, pattern);
     }
 };
+
+#endif

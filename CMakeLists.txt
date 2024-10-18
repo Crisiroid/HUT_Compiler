@@ -7,8 +7,6 @@ add_executable(HUT_Compiler main.cpp
         Frontend/Token.hpp
         Frontend/Scanner.hpp
         Frontend/Keywords.hpp
-        Frontend/Operators.hpp
-        Frontend/Delimiters.hpp
         Frontend/DFA.hpp
         Frontend/DFA.hpp
 )
