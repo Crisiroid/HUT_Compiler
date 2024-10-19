@@ -2,7 +2,6 @@
 #define DFA_HPP
 
 #include <regex>
-#include "Delimiters.hpp"
 
 enum class State {
     START,

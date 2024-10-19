@@ -99,8 +99,7 @@
 				1,
 				2,
 				3,
-				4,
-				5
+				4
 			]
 		}
 	],
@@ -125,11 +124,6 @@
 		{
 			"backtrace" : 1,
 			"path" : "Frontend/Keywords.hpp",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 1,
-			"path" : "Frontend/Delimiters.hpp",
 			"sourceGroupIndex" : 1
 		},
 		{
