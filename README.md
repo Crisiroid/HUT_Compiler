@@ -27,6 +27,6 @@ Welcome to Compiler Design Course, undergraduate course. ! Here you will find a 
 
 ### Fall 2024
 * [Mr. Amir Sajad Hosein Pour](https://github.com/crisiroid), Course Maintainer, Teaching Assistant
-* [alimpk](https://github.com/Fatemeh-Asadi26), Teaching Assistant
+* [Ms. Fateme Asadi](https://github.com/Fatemeh-Asadi26), Teaching Assistant
 
 
